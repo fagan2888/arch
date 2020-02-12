@@ -7,8 +7,10 @@ from functools import partial
 from itertools import product
 import os
 from random import shuffle
+import sys
 from typing import List
 
+import colorama
 from joblib import Parallel, cpu_count, delayed
 import numpy as np
 from numpy.random import PCG64, Generator, SeedSequence
@@ -25,6 +27,9 @@ PERCENTILES = list(np.arange(0.1, 1.0, 0.1)) + list(np.arange(1.0, 100.0, 0.5))
 PERCENTILES = PERCENTILES[::-1]
 # Maximum memory of the main simulated data
 MAX_MEMORY = 2 ** 21
+
+if sys.platform.lower() == "win32":
+    os.system("color")
 
 
 def block(
@@ -218,7 +223,10 @@ if __name__ == "__main__":
         fullfile = os.path.join(ROOT, filename)
         if not os.path.exists(fullfile):
             remaining_configs.append(config)
-    generator = np.random.default_rng(seq)
+    nconfig = colorama.Fore.GREEN + f"{len(configs)}" + colorama.Fore.RESET
+    nremconfig = colorama.Fore.RED + f"{len(remaining_configs)}" + colorama.Fore.RESET
+    print(f"Total configuration: {nconfig}, Remaining: {nremconfig}")
+
     shuffle(remaining_configs)
     Parallel(verbose=50, n_jobs=njobs)(
         delayed(partial_block)(rg, trend=trend, idx=idx)
